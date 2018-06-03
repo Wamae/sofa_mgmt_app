@@ -1,25 +1,21 @@
 import React, {Component} from 'react';
 import {
-    Button, DrawerLayoutAndroid, FlatList, StyleSheet, Text, TextInput, View
+    Button, FlatList, StyleSheet, Text, TextInput, View
 } from "react-native";
-import {ActionButton} from "react-native-material-ui";
 import Modal from 'react-native-modal';
 import OrderStatusItem from "./OrderStatusItem";
-
+import {Drawer, Fab} from "native-base";
+import SideBar from "../SideBar";
 
 const ACCOUNT_ID = 8;
 
 export default class OrderStatuses extends Component{
-    static navigationOptions ={
-        tabBarLabel: "Order Statuses"
-    }
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
             showSettings();
         }
     }
-
 
     constructor() {
         super();
@@ -30,7 +26,6 @@ export default class OrderStatuses extends Component{
             refresh: false
         }
     }
-
 
     _addOrderStatus = () =>{
             let orderStatus = this.state.orderStatus;
@@ -107,37 +102,25 @@ export default class OrderStatuses extends Component{
         alert("_onPressItem");
     }
 
+    closeDrawer = () => {
+        this.drawer._root.close()
+    };
+
+    openDrawer = () => {
+        this.drawer._root.open()
+    };
+
     render(){
 
         console.log(">>> OrderStatuses.js: ", this.state.orderStatuses);
 
-        var navigationView = (
-            <View style={{flex: 1}}>
-                <Text onPress={()=>this.props.navigation.navigate('Orders')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Orders</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Customers')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Customers</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Chairs')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chairs</Text>
-                <Text onPress={()=>this.props.navigation.navigate('ChairTypes')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chair Types</Text>
-                <Text onPress={()=>this.props.navigation.navigate('OrderStatuses')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Order Statuses</Text>
-            </View>
-        );
-
         return (
-            <DrawerLayoutAndroid
-                drawerWidth={300}
-                drawerPosition={DrawerLayoutAndroid.positions.Left}
-                renderNavigationView={() => navigationView}>
+            <Drawer
+                ref={(ref) => { this.drawer = ref; }}
+                content={<SideBar navigator={this.navigator} />}
+                onClose={() => this.closeDrawer()}
+            >
                 <View style={{flex: 1}}>
-
-                    {/*<StatusBar backgroundColor="rgba(0, 0, 0, 0.2)" translucent/>
-                    <View style={{backgroundColor: COLOR.green500, height: 24}}/>
-                    <Toolbar
-                        leftElement="menu"
-                        centerElement="Order Statuses"
-                        searchable={{
-                            autoFocus: true,
-                            placeholder: 'Search',
-                        }}
-                    />*/}
 
                     <FlatList
                         data={this.state.orderStatuses}
@@ -146,9 +129,15 @@ export default class OrderStatuses extends Component{
                         renderItem={this._renderItem}>
                     </FlatList>
 
-                    <ActionButton
-                        onPress={this._showDialog}
-                    />
+                    <Fab
+                        active={this.state.active}
+                        direction="up"
+                        containerStyle={{}}
+                        style={{backgroundColor: '#5067FF'}}
+                        position="bottomRight"
+                        onPress={this._showDialog}>
+                        <Icon name="add"/>
+                    </Fab>
 
                     <Modal isVisible={this.state.visibleModal}>
                         <View style={styles.modalContent}>
@@ -182,7 +171,7 @@ export default class OrderStatuses extends Component{
 
 
                 </View>
-            </DrawerLayoutAndroid>)
+            </Drawer>)
     }
 
 

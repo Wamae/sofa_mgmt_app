@@ -6,32 +6,25 @@ import Chairs from "./components/chairs/Chairs";
 
 export const AdNav = createStackNavigator({
         Home: {
-            screen: ChairTypes,
-            navigationOptions: {
-                title: "Chair Types",
-            }
+            screen: ChairTypes
         },
 
         OrderStatuses: {
-            screen: OrderStatuses,
-            navigationOptions: {
-                title: 'Order Statuses',
-            }
+            screen: OrderStatuses
         },
 
         Customers: {
-            screen: Customers,
-            navigationOptions: {
-                title: 'Customers',
-            }
+            screen: Customers
         },
 
         Chairs: {
-            screen: Chairs,
-            navigationOptions: {
-                title: 'Chairs',
-            }
-        },
-
+            screen: Chairs
+        }
+    },
+    {
+        headerMode: 'none',
+        navigationOptions: {
+            headerVisible: false,
+        }
     }
 );

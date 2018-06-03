@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
-import {TouchableOpacity, View} from "react-native";
-import {ListItem} from "react-native-material-ui";
+import {Body, ListItem, Text} from "native-base";
 
 class ChairItem extends Component {
 
@@ -14,23 +13,15 @@ class ChairItem extends Component {
 
         const textColor = this.props.selected ? "red" : "black";
         return (
-            <TouchableOpacity onPress={this._onPress}>
-                <View>
-                   {/* <Text style={{color: textColor}}>
-                        {this.props.title}
-                    </Text>*/}
-                    <ListItem
-                        divider
-                        centerElement={{
-                            primaryText: this.props.chair,
-                            secondaryText: this.props.chairType,
-                        }}
-                        onPress={() => {}}
-                    />
-                </View>
-            </TouchableOpacity>
-
-
+            <ListItem
+                divider
+                onPress={() => {
+                }}>
+                <Body>
+                <Text>{this.props.title}</Text>
+                <Text note>{this.props.title}</Text>
+                </Body>
+            </ListItem>
         );
     }
 

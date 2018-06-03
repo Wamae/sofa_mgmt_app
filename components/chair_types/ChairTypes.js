@@ -1,19 +1,21 @@
 import React, {Component} from 'react';
 import {
-    Button, DrawerLayoutAndroid, FlatList, StyleSheet, Text, TextInput,
-    View
+    Button, FlatList, StyleSheet, Text, View
 } from "react-native";
-import {ActionButton} from "react-native-material-ui";
 import Modal from 'react-native-modal';
 import ChairTypeItem from "./ChairTypeItem";
-
+import {
+    Body, Container, Content, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Spinner,
+    Title
+} from "native-base";
+import SideBar from "../SideBar";
+import {Font, AppLoading} from "expo";
+import MyStatusBar from "../MyStatusBar";
+import LoadingSpinner from "../LoadingSpinner";
 
 const ACCOUNT_ID = 8;
 
-export default class ChairTypes extends Component{
-    static navigationOptions ={
-        tabBarLabel: "Chair Types"
-    }
+export default class ChairTypes extends Component {
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
@@ -21,24 +23,26 @@ export default class ChairTypes extends Component{
         }
     }
 
-
     constructor() {
         super();
         this.state = {
             chairTypes: [],
             visibleModal: false,
             chairType: "",
-            refresh: false
+            refresh: false,
+            active: true,
+            loading: true,
+            fontLoaded: false,
         }
     }
 
 
-    _addChairType = () =>{
-            let chairType = this.state.orderStatus;
-            if(chairType.length === 0){
-                alert("Enter chair type");
-                return false;
-            }
+    _addChairType = () => {
+        let chairType = this.state.chairType;
+        if (chairType.length === 0) {
+            alert("Enter chair type");
+            return false;
+        }
 
         fetch('http://660044e3.ngrok.io/api/chair_types', {
             method: 'POST',
@@ -57,38 +61,46 @@ export default class ChairTypes extends Component{
                 this.setState({refresh: !this.state.refresh});
                 this._getAllChairTypes();
                 alert(responseJson.message);
-                this.setState({ visibleModal: false ,orderStatus: ""});
+                this.setState({visibleModal: false, orderStatus: ""});
 
             })
-            .catch((error) =>{
+            .catch((error) => {
                 console.error(error);
-            });;
+            });
+        ;
 
     }
 
-    _closeDialog = () =>{
-        this.setState({ visibleModal: false });
+    _closeDialog = () => {
+        this.setState({visibleModal: false});
     }
 
-    _showDialog = () =>{
-        this.setState({ visibleModal: true });
+    _showDialog = () => {
+        this.setState({visibleModal: true});
     }
 
-    _getAllChairTypes(){
+    _getAllChairTypes() {
         return fetch('http://660044e3.ngrok.io/api/get_all_chair_types?account_id=' + ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
                 this.setState({chairTypes: {"rows": json}});
             }).catch((error) => {
-            console.error(error);
-            alert("Could not connect to the server!");
-        });
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
     }
 
-    componentWillMount() {
+    async componentWillMount() {
 
-        return this._getAllChairTypes();
+        await Font.loadAsync({
+            'Roboto': require('native-base/Fonts/Roboto.ttf'),
+            'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
+        });
 
+        this._getAllChairTypes();
+
+        this.setState({fontLoaded: true});
+        this.setState({loading: false});
     }
 
     _keyExtractor = (item, index) => item.id.toString();
@@ -102,75 +114,101 @@ export default class ChairTypes extends Component{
         />
     );
 
-    _onPressItem = () =>{
+    _onPressItem = () => {
         alert("_onPressItem");
     }
 
-    render(){
+    closeDrawer = () => {
+        this.drawer._root.close()
+    };
 
-        console.log(">>> ChairTypes.js: ", this.state.chairs);
+    openDrawer = () => {
+        this.drawer._root.open()
+    };
 
-        var navigationView = (
-            <View style={{flex: 1}}>
-                <Text onPress={()=>this.props.navigation.navigate('Orders')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Orders</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Customers')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Customers</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Chairs')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chairs</Text>
-                <Text onPress={()=>this.props.navigation.navigate('ChairTypes')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chair Types</Text>
-                <Text onPress={()=>this.props.navigation.navigate('OrderStatuses')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Order Statuses</Text>
-            </View>
-        );
+    render() {
 
-        return (
-            <DrawerLayoutAndroid
-                drawerWidth={300}
-                drawerPosition={DrawerLayoutAndroid.positions.Left}
-                renderNavigationView={() => navigationView}>
-                <View style={{flex: 1}}>
+        if (this.state.loading) {
+            return (
+                <LoadingSpinner/>
+            );
+        } else {
 
-                    <FlatList
-                        data={this.state.chairTypes.rows}
-                        extraData={this.state.refresh}
-                        keyExtractor={this._keyExtractor}
-                        renderItem={this._renderItem}>
-                    </FlatList>
+            console.log(">>> ChairTypes.js: ", this.state.chairs);
 
-                    <ActionButton
-                        onPress={this._showDialog}
-                    />
+            return (
+                <Drawer
+                    ref={(ref) => {
+                        this.drawer = ref;
+                    }}
+                    content={<SideBar navigator={this.navigator}/>}
+                    onClose={() => this.closeDrawer()}
+                >
 
-                    <Modal isVisible={this.state.visibleModal}>
-                        <View style={styles.modalContent}>
-                            <Text>Add Chair Type</Text>
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Text>Chair Type</Text>
+                    <MyStatusBar/>
+
+                    {
+                        this.state.fontLoaded ? (
+                            <Header>
+                                <Left>
+                                    <Icon onPress={() => this.openDrawer()} name="menu"/>
+                                </Left>
+                                <Body>
+                                <Title>Chair Types</Title>
+                                </Body>
+                                <Right/>
+                            </Header>) : null
+                    }
+
+                    <View style={{flex: 1}}>
+
+                        <FlatList
+                            data={this.state.chairTypes.rows}
+                            extraData={this.state.refresh}
+                            keyExtractor={this._keyExtractor}
+                            renderItem={this._renderItem}>
+                        </FlatList>
+
+                        <Fab
+                            active={this.state.active}
+                            direction="up"
+                            containerStyle={{}}
+                            style={{backgroundColor: '#5067FF'}}
+                            position="bottomRight"
+                            onPress={this._showDialog}>
+                            <Icon name="add"/>
+                        </Fab>
+
+                        <Modal isVisible={this.state.visibleModal}>
+                            <View style={styles.modalContent}>
+                                <View style={styles.modalTitle}>
+                                    <Text>Add Chair Type</Text>
                                 </View>
-                                <View style={styles.buttonContainer}>
-                                    <TextInput
-                                        onChangeText={(value) => this.setState({chairType: value})}
-                                    />
+
+                                <Form>
+                                    <Item floatingLabel>
+                                        <Label>Chair Type</Label>
+                                        <Input onChangeText={(value) => this.setState({chairType: value})}/>
+                                    </Item>
+                                </Form>
+
+                                <View style={styles.footerContainer}>
+                                    <View style={styles.buttonContainer}>
+                                        <Button onPress={this._addChairType} title="Add"
+                                        />
+                                    </View>
+                                    <View style={styles.buttonContainer}>
+                                        <Button onPress={this._closeDialog} title="Close"
+                                        />
+                                    </View>
                                 </View>
                             </View>
-
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Button onPress={this._addChairType} title="Add"
-                                    />
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <Button onPress={this._closeDialog} title="Close"
-                                    />
-                                </View>
-                            </View>
+                        </Modal>
 
 
-
-                        </View>
-                    </Modal>
-
-
-                </View>
-            </DrawerLayoutAndroid>)
+                    </View>
+                </Drawer>);
+        }
     }
 
 
@@ -201,11 +239,13 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
     },
+    modalTitle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     modalContent: {
         backgroundColor: 'white',
         padding: 22,
-        justifyContent: 'center',
-        alignItems: 'center',
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
     },
