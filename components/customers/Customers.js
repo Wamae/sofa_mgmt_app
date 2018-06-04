@@ -68,7 +68,7 @@ export default class Customers extends Component {
                 first_name: firstName,
                 last_name: lastName,
                 phone: phone,
-                email: email,
+                email: this.state.email,
                 address: this.state.address,
                 created_by: USER_ID,
                 account_id: ACCOUNT_ID,
