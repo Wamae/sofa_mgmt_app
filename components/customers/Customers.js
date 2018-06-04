@@ -1,26 +1,25 @@
 import React, {Component} from 'react';
 import {
-    Button, DrawerLayoutAndroid, FlatList, StyleSheet, Text, TextInput,
-    View
+    Button, FlatList, StyleSheet, Text, View
 } from "react-native";
-import {ActionButton} from "react-native-material-ui";
 import Modal from 'react-native-modal';
 import CustomerItem from "./CustomerItem";
+import {
+    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Title
+} from "native-base";
+import SideBar from "../SideBar";
+import {Font} from "expo";
+import MyStatusBar from "../MyStatusBar";
+import LoadingSpinner from "../LoadingSpinner";
+import call from "react-native-phone-call";
 
-
-const ACCOUNT_ID = 8;
-
-export default class Customers extends Component{
-    static navigationOptions ={
-        tabBarLabel: "Customers"
-    }
+export default class Customers extends Component {
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
             showSettings();
         }
     }
-
 
     constructor() {
         super();
@@ -32,17 +31,20 @@ export default class Customers extends Component{
             phone: "",
             email: "",
             address: "",
-            refresh: false
+            refresh: false,
+            active: true,
+            loading: true,
+            fontLoaded: false,
         }
     }
 
 
-    _addCustomer = () =>{
-            let firstName = this.state.firstName;
-            if(firstName.length === 0){
-                alert("Enter first name");
-                return false;
-            }
+    _addCustomer = () => {
+        let firstName = this.state.firstName;
+        if (firstName.length === 0) {
+            alert("Enter chair type");
+            return false;
+        }
 
         let lastName = this.state.lastName;
         if(lastName.length === 0){
@@ -56,7 +58,7 @@ export default class Customers extends Component{
             return false;
         }
 
-        fetch('http://660044e3.ngrok.io/api/customers', {
+        fetch(BASE_URL+'/customers', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -66,9 +68,10 @@ export default class Customers extends Component{
                 first_name: firstName,
                 last_name: lastName,
                 phone: phone,
+                email: email,
                 address: this.state.address,
-                created_by: 1,
-                account_id: 8,
+                created_by: USER_ID,
+                account_id: ACCOUNT_ID,
             }),
         }).then((response) => response.json())
             .then((responseJson) => {
@@ -76,38 +79,46 @@ export default class Customers extends Component{
                 this.setState({refresh: !this.state.refresh});
                 this._getAllCustomers();
                 alert(responseJson.message);
-                this.setState({ visibleModal: false ,firstName: "",lastName: "",phone: "",address: ""});
+                this.setState({visibleModal: false, orderStatus: ""});
 
             })
-            .catch((error) =>{
+            .catch((error) => {
                 console.error(error);
-            });;
+            });
+        ;
 
     }
 
-    _closeDialog = () =>{
-        this.setState({ visibleModal: false });
+    _closeDialog = () => {
+        this.setState({visibleModal: false});
     }
 
-    _showDialog = () =>{
-        this.setState({ visibleModal: true });
+    _showDialog = () => {
+        this.setState({visibleModal: true});
     }
 
-    _getAllCustomers(){
-        return fetch('http://660044e3.ngrok.io/api/get_all_customers?account_id=' + ACCOUNT_ID)
+    _getAllCustomers() {
+        return fetch(BASE_URL+'/get_all_customers?account_id=' + ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
                 this.setState({customers: {"rows": json}});
             }).catch((error) => {
-            console.error(error);
-            alert("Could not connect to the server!");
-        });
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
     }
 
-    componentWillMount() {
+    async componentWillMount() {
 
-        return this._getAllCustomers();
+        await Font.loadAsync({
+            'Roboto': require('native-base/Fonts/Roboto.ttf'),
+            'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
+        });
 
+        this._getAllCustomers();
+
+        this.setState({fontLoaded: true});
+        this.setState({loading: false});
     }
 
     _keyExtractor = (item, index) => item.id.toString();
@@ -115,7 +126,8 @@ export default class Customers extends Component{
     _renderItem = ({item}) => (
         <CustomerItem
             id={item.id.toString()}
-            onPressItem={this._onPressItem}
+            //onPressItem={this._onPressItem}
+            onMakeCall={this._makeCall.bind(this)}
             //selected={!!this.state.selected.get(item.id)}
             firstName={item.first_name}
             lastName={item.last_name}
@@ -124,108 +136,130 @@ export default class Customers extends Component{
         />
     );
 
-    _onPressItem = () =>{
+    _onPressItem = (phone) => {
         alert("_onPressItem");
     }
 
-    render(){
+    _makeCall(phone) {
+        const args = {
+            number: phone,
+            prompt: true
+        }
 
-        console.log(">>> Customers.js: ", this.state.customers);
+        call(args).catch(console.error)
+    }
 
-        var navigationView = (
-            <View style={{flex: 1}}>
-                <Text onPress={()=>this.props.navigation.navigate('Orders')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Orders</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Customers')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Customers</Text>
-                <Text onPress={()=>this.props.navigation.navigate('Chairs')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chairs</Text>
-                <Text onPress={()=>this.props.navigation.navigate('ChairTypes')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Chair Types</Text>
-                <Text onPress={()=>this.props.navigation.navigate('OrderStatuses')} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>Order Statuses</Text>
-            </View>
-        );
+    closeDrawer = () => {
+        this.drawer._root.close()
+    };
 
-        return (
-            <DrawerLayoutAndroid
-                drawerWidth={300}
-                drawerPosition={DrawerLayoutAndroid.positions.Left}
-                renderNavigationView={() => navigationView}>
-                <View style={{flex: 1}}>
+    openDrawer = () => {
+        this.drawer._root.open()
+    };
 
-                    <FlatList
-                        data={this.state.customers.rows}
-                        extraData={this.state.refresh}
-                        keyExtractor={this._keyExtractor}
-                        renderItem={this._renderItem}>
-                    </FlatList>
+    render() {
 
-                    <ActionButton
-                        onPress={this._showDialog}
-                    />
+        if (this.state.loading) {
+            return (
+                <LoadingSpinner/>
+            );
+        } else {
 
-                    <Modal isVisible={this.state.visibleModal}>
-                        <View style={styles.modalContent}>
-                            <Text>Add Customer</Text>
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Text>First Name</Text>
+            console.log(">>> Customers.js: ", this.state.chairs);
+
+            return (
+                <Drawer
+                    ref={(ref) => {
+                        this.drawer = ref;
+                    }}
+                    content={<SideBar navigation={this.props.navigation} navigator={this.navigator}/>}
+                    onClose={() => this.closeDrawer()}
+                >
+
+                    <MyStatusBar/>
+
+                    {
+                        this.state.fontLoaded ? (
+                            <Header>
+                                <Left>
+                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
+                                </Left>
+                                <Body>
+                                <Title>Customers</Title>
+                                </Body>
+                                <Right/>
+                            </Header>) : null
+                    }
+
+                    <View style={{flex: 1}}>
+
+                        <FlatList
+                            data={this.state.customers.rows}
+                            extraData={this.state.refresh}
+                            keyExtractor={this._keyExtractor}
+                            renderItem={this._renderItem}>
+                        </FlatList>
+
+                        <Fab
+                            active={this.state.active}
+                            direction="up"
+                            containerStyle={{}}
+                            style={{backgroundColor: '#5067FF'}}
+                            position="bottomRight"
+                            onPress={this._showDialog}>
+                            <Icon name="add"/>
+                        </Fab>
+
+                        <Modal isVisible={this.state.visibleModal}>
+                            <View style={styles.modalContent}>
+                                <View style={styles.modalTitle}>
+                                    <Text>Add First Name</Text>
                                 </View>
-                                <View style={styles.buttonContainer}>
-                                    <TextInput
-                                        onChangeText={(value) => this.setState({firstName: value})}
-                                    />
+
+                                <Form>
+                                    <Item floatingLabel>
+                                        <Label>First Name</Label>
+                                        <Input onChangeText={(value) => this.setState({firstName: value})}/>
+                                    </Item>
+
+                                    <Item floatingLabel>
+                                        <Label>Last Name</Label>
+                                        <Input onChangeText={(value) => this.setState({lastName: value})}/>
+                                    </Item>
+
+                                    <Item floatingLabel>
+                                        <Label>Phone</Label>
+                                        <Input onChangeText={(value) => this.setState({phone: value})}/>
+                                    </Item>
+
+                                    <Item floatingLabel>
+                                        <Label>Email</Label>
+                                        <Input onChangeText={(value) => this.setState({email: value})}/>
+                                    </Item>
+
+                                    <Item floatingLabel>
+                                        <Label>Address</Label>
+                                        <Input onChangeText={(value) => this.setState({address: value})}/>
+                                    </Item>
+                                </Form>
+
+                                <View style={styles.footerContainer}>
+                                    <View style={styles.buttonContainer}>
+                                        <Button onPress={this._addCustomer} title="Add"
+                                        />
+                                    </View>
+                                    <View style={styles.buttonContainer}>
+                                        <Button onPress={this._closeDialog} title="Close"
+                                        />
+                                    </View>
                                 </View>
                             </View>
-
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Text>Last Name</Text>
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <TextInput
-                                        onChangeText={(value) => this.setState({lastName: value})}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Text>Phone</Text>
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <TextInput
-                                        onChangeText={(value) => this.setState({phone: value})}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Text>Address</Text>
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <TextInput
-                                        onChangeText={(value) => this.setState({address: value})}
-                                    />
-                                </View>
-                            </View>
-
-                            <View style={styles.footerContainer}>
-                                <View style={styles.buttonContainer}>
-                                    <Button onPress={this._addCustomer} title="Add"
-                                    />
-                                </View>
-                                <View style={styles.buttonContainer}>
-                                    <Button onPress={this._closeDialog} title="Close"
-                                    />
-                                </View>
-                            </View>
+                        </Modal>
 
 
-
-                        </View>
-                    </Modal>
-
-
-                </View>
-            </DrawerLayoutAndroid>)
+                    </View>
+                </Drawer>);
+        }
     }
 
 
@@ -256,11 +290,13 @@ const styles = StyleSheet.create({
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
     },
+    modalTitle: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     modalContent: {
         backgroundColor: 'white',
         padding: 22,
-        justifyContent: 'center',
-        alignItems: 'center',
         borderRadius: 4,
         borderColor: 'rgba(0, 0, 0, 0.1)',
     },

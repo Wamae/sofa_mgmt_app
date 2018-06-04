@@ -5,15 +5,12 @@ import {
 import Modal from 'react-native-modal';
 import ChairTypeItem from "./ChairTypeItem";
 import {
-    Body, Container, Content, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Spinner,
-    Title
+    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Title
 } from "native-base";
 import SideBar from "../SideBar";
-import {Font, AppLoading} from "expo";
+import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
-
-const ACCOUNT_ID = 8;
 
 export default class ChairTypes extends Component {
 
@@ -44,7 +41,7 @@ export default class ChairTypes extends Component {
             return false;
         }
 
-        fetch('http://660044e3.ngrok.io/api/chair_types', {
+        fetch(BASE_URL+'/chair_types', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -52,8 +49,8 @@ export default class ChairTypes extends Component {
             },
             body: JSON.stringify({
                 chair_type: chairType,
-                created_by: 1,
-                account_id: 8,
+                created_by: USER_ID,
+                account_id: ACCOUNT_ID,
             }),
         }).then((response) => response.json())
             .then((responseJson) => {
@@ -80,7 +77,7 @@ export default class ChairTypes extends Component {
     }
 
     _getAllChairTypes() {
-        return fetch('http://660044e3.ngrok.io/api/get_all_chair_types?account_id=' + ACCOUNT_ID)
+        return fetch(BASE_URL+'/get_all_chair_types?account_id=' + ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
                 this.setState({chairTypes: {"rows": json}});
@@ -141,7 +138,7 @@ export default class ChairTypes extends Component {
                     ref={(ref) => {
                         this.drawer = ref;
                     }}
-                    content={<SideBar navigator={this.navigator}/>}
+                    content={<SideBar navigation={this.props.navigation} navigator={this.navigator}/>}
                     onClose={() => this.closeDrawer()}
                 >
 
@@ -151,7 +148,7 @@ export default class ChairTypes extends Component {
                         this.state.fontLoaded ? (
                             <Header>
                                 <Left>
-                                    <Icon onPress={() => this.openDrawer()} name="menu"/>
+                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
                                 <Title>Chair Types</Title>
@@ -194,7 +191,7 @@ export default class ChairTypes extends Component {
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._addChairType} title="Add"
+                                            <Button onPress={this._addChairType} title="Add"
                                         />
                                     </View>
                                     <View style={styles.buttonContainer}>

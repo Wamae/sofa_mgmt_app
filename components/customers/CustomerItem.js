@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
-import {Body, Icon, ListItem, Right, Text} from "native-base";
+import {Body, Button, Icon, ListItem, Right, Text} from "native-base";
+import call from "react-native-phone-call";
 
 class CustomerItem extends Component {
 
     _onPress = () => {
-        this.props.onPressItem(this.props.id);
+        this.props.onPressItem(this.props.phone);
     };
 
     render() {
@@ -15,20 +16,27 @@ class CustomerItem extends Component {
         return (
             <ListItem
                 divider
-                onPress={() => {
-                }}>
+
+            >
                 <Body>
-                <Text>{this.props.title}</Text>
-                <Text note>{this.props.title}</Text>
+                <Text>{this.props.firstName+" "+this.props.lastName}</Text>
+                <Text note>{this.props.phone}</Text>
                 </Body>
                 <Right>
-                    <Icon name="call"/>
+                    <Button iconLeft transparent onPress={this._makeCall.bind(this,this.props.phone)}>
+                        <Icon name="call" style={{color: 'green'}}/>
+                        <Text></Text>
+                    </Button>
+
                 </Right>
             </ListItem>
 
         );
     }
 
+    _makeCall(phone) {
+        this.props.onMakeCall(phone)
+    }
 }
 
 

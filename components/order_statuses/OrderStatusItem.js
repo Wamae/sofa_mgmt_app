@@ -18,8 +18,8 @@ class OrderStatusItem extends Component {
                 onPress={() => {
                 }}>
                 <Body>
-                <Text>{this.props.title}</Text>
-                <Text note>{this.props.title}</Text>
+                <Text>{this.props.orderStatus}</Text>
+                <Text note>{this.props.orderStatus}</Text>
                 </Body>
             </ListItem>
         );
