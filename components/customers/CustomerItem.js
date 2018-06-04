@@ -1,6 +1,5 @@
 import React, {Component} from 'react';
 import {Body, Button, Icon, ListItem, Right, Text} from "native-base";
-import call from "react-native-phone-call";
 
 class CustomerItem extends Component {
 

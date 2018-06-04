@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Body, ListItem, Text} from "native-base";
+import {Body, Left, ListItem, Text, Thumbnail} from "native-base";
 
 class ChairItem extends Component {
 
@@ -13,13 +13,16 @@ class ChairItem extends Component {
 
         const textColor = this.props.selected ? "red" : "black";
         return (
-            <ListItem
+            <ListItem icon
                 divider
                 onPress={() => {
                 }}>
+                <Left>
+                    <Thumbnail small source={{uri: this.props.imageUrl}} />
+                </Left>
                 <Body>
-                <Text>{this.props.title}</Text>
-                <Text note>{this.props.title}</Text>
+                <Text>{this.props.chair}</Text>
+                <Text note>{this.props.chairType}</Text>
                 </Body>
             </ListItem>
         );

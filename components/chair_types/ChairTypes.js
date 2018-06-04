@@ -20,9 +20,11 @@ export default class ChairTypes extends Component {
         }
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
+            ACCOUNT_ID: this.props.navigation.state.params.account_id,
+            USER_ID: this.props.navigation.state.params.user_id,
             chairTypes: [],
             visibleModal: false,
             chairType: "",
@@ -31,6 +33,7 @@ export default class ChairTypes extends Component {
             loading: true,
             fontLoaded: false,
         }
+        console.log(">>> constructor: ", this.props);
     }
 
 
@@ -41,7 +44,7 @@ export default class ChairTypes extends Component {
             return false;
         }
 
-        fetch(BASE_URL+'/chair_types', {
+        fetch(BASE_URL + '/chair_types', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -49,17 +52,19 @@ export default class ChairTypes extends Component {
             },
             body: JSON.stringify({
                 chair_type: chairType,
-                created_by: USER_ID,
-                account_id: ACCOUNT_ID,
+                created_by: this.state.USER_ID,
+                account_id: this.state.ACCOUNT_ID,
             }),
         }).then((response) => response.json())
-            .then((responseJson) => {
-
-                this.setState({refresh: !this.state.refresh});
-                this._getAllChairTypes();
-                alert(responseJson.message);
-                this.setState({visibleModal: false, orderStatus: ""});
-
+            .then((json) => {
+                if (json.data.length > 0) {
+                    this.setState({refresh: !this.state.refresh});
+                    this._getAllChairTypes();
+                    alert(json.message);
+                    this.setState({visibleModal: false, orderStatus: ""});
+                } else {
+                    alert(json.message);
+                }
             })
             .catch((error) => {
                 console.error(error);
@@ -77,10 +82,15 @@ export default class ChairTypes extends Component {
     }
 
     _getAllChairTypes() {
-        return fetch(BASE_URL+'/get_all_chair_types?account_id=' + ACCOUNT_ID)
+        return fetch(BASE_URL + '/get_all_chair_types?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
-                this.setState({chairTypes: {"rows": json}});
+                if (json.data.length > 0) {
+                    this.setState({chairTypes: {"rows": json.data}});
+
+                } else {
+                    alert(json.message);
+                }
             }).catch((error) => {
                 console.error(error);
                 alert("Could not connect to the server!");
@@ -191,7 +201,7 @@ export default class ChairTypes extends Component {
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                            <Button onPress={this._addChairType} title="Add"
+                                        <Button onPress={this._addChairType} title="Add"
                                         />
                                     </View>
                                     <View style={styles.buttonContainer}>

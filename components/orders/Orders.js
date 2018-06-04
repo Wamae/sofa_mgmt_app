@@ -1,9 +1,9 @@
 import React, {Component} from 'react';
 import {
-    Button, FlatList, Image, StyleSheet, Text, View
+    Button, FlatList, StyleSheet, Text, View, AsyncStorage
 } from "react-native";
 import Modal from 'react-native-modal';
-import ChairItem from "./ChairItem";
+import OrderItem from "./OrderItem";
 import {
     Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Picker, Right, Title
 } from "native-base";
@@ -12,100 +12,66 @@ import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 
-export default class Chairs extends Component {
-
-    //ImagePicker = require('react-native-image-picker');
+export default class Orders extends Component {
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
             showSettings();
         }
-
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
-            chairs: [],
-            chairTypes: [],
-            chairTypeItems: null,
+            ACCOUNT_ID: this.props.navigation.state.params.account_id,
+            USER_ID: this.props.navigation.state.params.user_id,
+            orders: [],
+            chairItems: null,
+            customerItems: null,
             visibleModal: false,
-            chair: "",
+            chairId: null,
+            customerId: null,
+            amount: null,
+            dueDate: null,
             refresh: false,
             active: true,
             loading: true,
             fontLoaded: false,
-            chairTypeId: "",
-            chairImage: null,
         }
-
-        this.makeImagePicker();
-
     }
 
-    makeImagePicker() {
-        // More info on all the options is below in the README...just some common use cases shown here
-        /*var options = {
-            title: 'Select Avatar',
-            customButtons: [
-                {name: 'fb', title: 'Choose Photo from Facebook'},
-            ],
-            storageOptions: {
-                skipBackup: true,
-                path: 'images'
-            }
-        };
-
-        this.ImagePicker.showImagePicker(options, (response) => {
-            console.log('Response = ', response);
-
-            if (response.didCancel) {
-                console.log('User cancelled image picker');
-            }
-            else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
-            }
-            else if (response.customButton) {
-                console.log('User tapped custom button: ', response.customButton);
-            }
-            else {
-                let source = { uri: response.uri };
-
-                // You can also display the image using data:
-                // let source = { uri: 'data:image/jpeg;base64,' + response.data };
-
-                this.setState({
-                    avatarSource: source
-                });
-            }
-        });*/
-    }
-
-
-    addChair = () => {
-        let chair = this.state.chair;
-        if (chair.length === 0) {
-            alert("Enter chair");
+    _addOrder = () => {
+        let dueDate = this.state.dueDate;
+        if (dueDate.length === 0) {
+            alert("Enter due date");
+            return false;
+        }
+        let amount = this.state.amount;
+        if (amount.length === 0) {
+            alert("Enter amount");
             return false;
         }
 
-        fetch(BASE_URL + '/chairs', {
+        fetch(BASE_URL + '/orders', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
             },
             body: JSON.stringify({
-                chair: chair,
-                chair_type_id: this.state.chairTypeId,
-                created_by: USER_ID,
-                account_id: ACCOUNT_ID,
+                chair_id: chairId,
+                customer_id: customerId,
+                amount: amount,
+                dueDate: dueDate,
+                created_by: this.state.USER_ID,
+                account_id: this.state.ACCOUNT_ID,
             }),
         }).then((response) => response.json())
             .then((responseJson) => {
 
                 this.setState({refresh: !this.state.refresh});
-                this._getAllChairs();
+                this._getAllCustomers();
                 alert(responseJson.message);
                 this.setState({visibleModal: false, orderStatus: ""});
 
@@ -125,39 +91,39 @@ export default class Chairs extends Component {
         this.setState({visibleModal: true});
     }
 
-    _getAllChairs() {
-        return fetch(BASE_URL + '/get_all_chairs?account_id=' + ACCOUNT_ID)
-            .then((response) => response.json())
-            .then((json) => {
-                this.setState({chairs: {"rows": json}});
-            }).catch((error) => {
-                console.error(error);
-                alert("Could not connect to the server!");
-            });
-    }
-
-    onValueChange(value: string) {
+    onCustomerChange(value: string) {
         this.setState({
-            chairTypeId: value
+            customerId: value
         });
     }
 
-    _getAllChairTypes() {
-        return fetch(BASE_URL + '/get_all_chair_types?account_id=' + ACCOUNT_ID)
+    _getAllCustomers() {
+        return fetch(BASE_URL + '/get_all_customers?account_id=' + this.state.ACCOUNT_ID, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            }
+        })
             .then((response) => response.json())
             .then((json) => {
 
-                this.setState({chairTypes: {"rows": json}});
+                if (json.data.length > 0) {
+                    this.setState({customers: {"rows": json.data}});
 
-                let chairTypeItems = (<Picker
-                    selectedValue={this.state.chairTypeId}
-                    onValueChange={this.onValueChange.bind(this)}
-                >
-                    {json.map((chairType) => <Picker.Item key={chairType.id} label={chairType.chair_type}
-                                                                value={chairType.id}/>)}
-                </Picker>);
+                    let customerItems = (<Picker
+                        selectedValue={this.state.customerId}
+                        onValueChange={this.onCustomerChange.bind(this)}
+                    >
+                        {json.data.map((customer) => <Picker.Item key={customer.id}
+                                                             label={customer.first_name + " " + customer.last_name}
+                                                             value={customer.id}/>)}
+                    </Picker>);
 
-                this.setState({chairTypeItems:chairTypeItems});
+                    this.setState({customerItems: customerItems});
+                } else {
+                    alert(json.message);
+                }
 
             }).catch((error) => {
                 console.error(error);
@@ -165,12 +131,68 @@ export default class Chairs extends Component {
             });
     }
 
-    componentDidMount() {
+    onChairChange(value: string) {
+        this.setState({
+            chairId: value
+        });
+    }
 
-        this._getAllChairTypes();
+    _getAllChairs() {
+        return fetch(BASE_URL + '/get_all_chairs?account_id=' + this.state.ACCOUNT_ID, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            },
+        })
+            .then((response) => response.json())
+            .then((json) => {
 
-        this._getAllChairs();
-        this.setState({loading: false});
+                if (json.data.length > 0) {
+
+                    this.setState({chairs: {"rows": json.data}});
+
+                    let chairItems = (<Picker
+                        selectedValue={this.state.chairId}
+                        onValueChange={this.onChairChange.bind(this)}
+                    >
+                        {json.data.map((chair) => <Picker.Item key={chair.id} label={chair.chair}
+                                                          value={chair.id}/>)}
+                    </Picker>);
+
+                    this.setState({chairItems: chairItems});
+
+                } else {
+                    alert(json.message);
+                }
+
+            }).catch((error) => {
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
+    }
+
+
+    _getAllOrders() {
+        return fetch(BASE_URL + '/get_all_orders?account_id=' + this.state.ACCOUNT_ID, {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            },
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                if (json.data.length > 0) {
+                    this.setState({orders: {"rows": json.data}});
+                } else {
+                    alert(json.message);
+                }
+
+            }).catch((error) => {
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
     }
 
     async componentWillMount() {
@@ -180,23 +202,31 @@ export default class Chairs extends Component {
             'Roboto_medium': require('native-base/Fonts/Roboto_medium.ttf'),
         });
 
+        this._getAllOrders();
+        this._getAllCustomers();
+        this._getAllChairs();
+
         this.setState({fontLoaded: true});
+        this.setState({loading: false});
     }
 
     _keyExtractor = (item, index) => item.id.toString();
 
     _renderItem = ({item}) => (
-        <ChairItem
+        <OrderItem
             id={item.id.toString()}
-            onPressItem={this._onPressItem}
+            //onPressItem={this._onPressItem}
             //selected={!!this.state.selected.get(item.id)}
+            customerName={item.customer_name}
             chair={item.chair}
             chairType={item.chair_type}
-            imageUrl={item.image_url}
+            amount={item.amount}
+            dueDate={item.due_date}
+            orderStatus={item.order_status}
         />
     );
 
-    _onPressItem = () => {
+    _onPressItem = (amount) => {
         alert("_onPressItem");
     }
 
@@ -208,23 +238,6 @@ export default class Chairs extends Component {
         this.drawer._root.open()
     };
 
-    getChairTypes = () => {
-        let chairTypes = this.state.chairTypes.rows;
-        console.log(">>> getChairTypes: ", chairTypes);
-        if (chairTypes.length > 0) {
-            return (
-                <Picker
-                    selectedValue={this.state.chairTypeId}
-                >
-                    <Picker.Item key={0} label={'Tipo de evento'} value={''}/>
-                    {chairTypes.map((chairType) => <Picker.Item key={chairType.id} label={chairType.chair_type}
-                                                                value={chairType.id}/>)}
-                </Picker>
-            );
-        }
-        return null;
-    }
-
     render() {
 
         if (this.state.loading) {
@@ -233,15 +246,15 @@ export default class Chairs extends Component {
             );
         } else {
 
-            console.log(">>> Chairs.js: ", this.state.chairs);
-            console.log(">>> ChairTypes.js: ", this.state.chairTypes);
+            console.log(">>> Orders.js: ", this.state.chairs);
 
             return (
                 <Drawer
                     ref={(ref) => {
                         this.drawer = ref;
                     }}
-                    content={<SideBar navigation={this.props.navigation} navigator={this.navigator}/>}
+                    content={<SideBar accountId={this.state.ACCOUNT_ID} userId={this.state.USER_ID}
+                                      navigation={this.props.navigation} navigator={this.navigator}/>}
                     onClose={() => this.closeDrawer()}
                 >
 
@@ -254,7 +267,7 @@ export default class Chairs extends Component {
                                     <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
-                                <Title>Chairs</Title>
+                                <Title>Orders</Title>
                                 </Body>
                                 <Right/>
                             </Header>) : null
@@ -263,7 +276,7 @@ export default class Chairs extends Component {
                     <View style={{flex: 1}}>
 
                         <FlatList
-                            data={this.state.chairs.rows}
+                            data={this.state.orders.rows}
                             extraData={this.state.refresh}
                             keyExtractor={this._keyExtractor}
                             renderItem={this._renderItem}>
@@ -282,27 +295,35 @@ export default class Chairs extends Component {
                         <Modal isVisible={this.state.visibleModal}>
                             <View style={styles.modalContent}>
                                 <View style={styles.modalTitle}>
-                                    <Text>Add Chair</Text>
+                                    <Text>Add First Name</Text>
                                 </View>
 
                                 <Form>
-                                    <Item floatingLabel>
-                                        <Label>Chair</Label>
-                                        <Input onChangeText={(value) => this.setState({chair: value})}/>
+                                    <Item inlineLabel>
+                                        <Label>Chairs</Label>
+                                        {this.state.chairItems}
                                     </Item>
 
                                     <Item inlineLabel>
-                                        <Label>Chair Types</Label>
-                                        {this.state.chairTypeItems}
+                                        <Label>Customers</Label>
+                                        {this.state.customerItems}
                                     </Item>
 
-                                    <Image source={this.state.chairImage} />
+                                    <Item floatingLabel>
+                                        <Label>Amount</Label>
+                                        <Input onChangeText={(value) => this.setState({amount: value})}/>
+                                    </Item>
+
+                                    <Item floatingLabel>
+                                        <Label>Due Date</Label>
+                                        <Input onChangeText={(value) => this.setState({dueDate: value})}/>
+                                    </Item>
 
                                 </Form>
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this.addChair} title="Add"
+                                        <Button onPress={this._addOrder} title="Add"
                                         />
                                     </View>
                                     <View style={styles.buttonContainer}>
@@ -318,6 +339,7 @@ export default class Chairs extends Component {
                 </Drawer>);
         }
     }
+
 
 }
 
