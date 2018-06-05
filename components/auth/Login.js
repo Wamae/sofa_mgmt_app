@@ -7,8 +7,8 @@ export default class Login extends Component {
     constructor() {
         super();
         this.state = {
-            user_name: null,
-            password: null
+            user_name: "Brian",
+            password: "tenten"
         }
     }
 

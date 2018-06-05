@@ -21,9 +21,11 @@ export default class Customers extends Component {
         }
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
+            ACCOUNT_ID: this.props.navigation.state.params.account_id,
+            USER_ID: this.props.navigation.state.params.user_id,
             customers: [],
             visibleModal: false,
             firstName: "",
@@ -47,18 +49,18 @@ export default class Customers extends Component {
         }
 
         let lastName = this.state.lastName;
-        if(lastName.length === 0){
+        if (lastName.length === 0) {
             alert("Enter last name");
             return false;
         }
 
         let phone = this.state.phone;
-        if(phone.length === 0){
+        if (phone.length === 0) {
             alert("Enter phone number");
             return false;
         }
 
-        fetch(BASE_URL+'/customers', {
+        fetch(BASE_URL + '/customers', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -70,16 +72,19 @@ export default class Customers extends Component {
                 phone: phone,
                 email: this.state.email,
                 address: this.state.address,
-                created_by: USER_ID,
-                account_id: ACCOUNT_ID,
+                created_by: this.state.USER_ID,
+                account_id: this.state.ACCOUNT_ID,
             }),
         }).then((response) => response.json())
-            .then((responseJson) => {
-
-                this.setState({refresh: !this.state.refresh});
-                this._getAllCustomers();
-                alert(responseJson.message);
-                this.setState({visibleModal: false, orderStatus: ""});
+            .then((json) => {
+                if (json.status == 1) {
+                    this.setState({refresh: !this.state.refresh});
+                    this._getAllCustomers();
+                    alert(json.message);
+                    this.setState({visibleModal: false, orderStatus: ""});
+                } else {
+                    alert(json.message);
+                }
 
             })
             .catch((error) => {
@@ -98,10 +103,14 @@ export default class Customers extends Component {
     }
 
     _getAllCustomers() {
-        return fetch(BASE_URL+'/get_all_customers?account_id=' + ACCOUNT_ID)
+        return fetch(BASE_URL + '/get_all_customers?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
-                this.setState({customers: {"rows": json}});
+                if (json.data.length > 0) {
+                    this.setState({customers: {"rows": json.data}});
+                } else {
+                    alert(json.message);
+                }
             }).catch((error) => {
                 console.error(error);
                 alert("Could not connect to the server!");
@@ -180,7 +189,7 @@ export default class Customers extends Component {
 
                     {
                         this.state.fontLoaded ? (
-                            <Header>
+                            <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
                                     <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
@@ -204,7 +213,7 @@ export default class Customers extends Component {
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#5067FF'}}
+                            style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
                             <Icon name="add"/>

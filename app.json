@@ -1,4 +1,6 @@
 {
+  "name": "esms_app",
+  "displayName": "esms_app",
   "expo": {
     "sdkVersion": "27.0.0"
   }

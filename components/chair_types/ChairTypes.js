@@ -57,11 +57,12 @@ export default class ChairTypes extends Component {
             }),
         }).then((response) => response.json())
             .then((json) => {
-                if (json.data.length > 0) {
+                console.log(">>> addChair: ",json);
+                if (json.status == 1) {
                     this.setState({refresh: !this.state.refresh});
                     this._getAllChairTypes();
                     alert(json.message);
-                    this.setState({visibleModal: false, orderStatus: ""});
+                    this.setState({visibleModal: false, chairType: ""});
                 } else {
                     alert(json.message);
                 }
@@ -156,7 +157,7 @@ export default class ChairTypes extends Component {
 
                     {
                         this.state.fontLoaded ? (
-                            <Header>
+                            <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
                                     <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
@@ -180,7 +181,7 @@ export default class ChairTypes extends Component {
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#5067FF'}}
+                            style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
                             <Icon name="add"/>

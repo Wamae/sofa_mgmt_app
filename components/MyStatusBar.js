@@ -7,7 +7,7 @@ export default class MyStatusBar extends Component {
 
         return (
             <View>
-                <StatusBar backgroundColor="rgba(0, 0, 0, 0.2)" translucent/>
+                <StatusBar backgroundColor="#303F9F"/>
                 <View style={{height: 24}}/>
             </View>
         );

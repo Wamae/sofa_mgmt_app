@@ -11,6 +11,7 @@ import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
+import DatePicker from "react-native-datepicker";
 
 export default class Orders extends Component {
 
@@ -31,8 +32,8 @@ export default class Orders extends Component {
             visibleModal: false,
             chairId: null,
             customerId: null,
-            amount: null,
-            dueDate: null,
+            amount: "",
+            dueDate: "",
             refresh: false,
             active: true,
             loading: true,
@@ -60,20 +61,23 @@ export default class Orders extends Component {
                 'Authorization': 'Bearer ' + TOKEN,
             },
             body: JSON.stringify({
-                chair_id: chairId,
-                customer_id: customerId,
+                chair_id: this.state.chairId,
+                customer_id: this.state.customerId,
                 amount: amount,
-                dueDate: dueDate,
+                due_date: dueDate,
                 created_by: this.state.USER_ID,
                 account_id: this.state.ACCOUNT_ID,
             }),
         }).then((response) => response.json())
-            .then((responseJson) => {
-
-                this.setState({refresh: !this.state.refresh});
-                this._getAllCustomers();
-                alert(responseJson.message);
-                this.setState({visibleModal: false, orderStatus: ""});
+            .then((json) => {
+                if (json.status == 1) {
+                    this.setState({refresh: !this.state.refresh});
+                    this._getAllCustomers();
+                    alert(json.message);
+                    this.setState({visibleModal: false, orderStatus: ""});
+                } else {
+                    alert(json.message);
+                }
 
             })
             .catch((error) => {
@@ -116,8 +120,8 @@ export default class Orders extends Component {
                         onValueChange={this.onCustomerChange.bind(this)}
                     >
                         {json.data.map((customer) => <Picker.Item key={customer.id}
-                                                             label={customer.first_name + " " + customer.last_name}
-                                                             value={customer.id}/>)}
+                                                                  label={customer.first_name + " " + customer.last_name}
+                                                                  value={customer.id}/>)}
                     </Picker>);
 
                     this.setState({customerItems: customerItems});
@@ -157,7 +161,7 @@ export default class Orders extends Component {
                         onValueChange={this.onChairChange.bind(this)}
                     >
                         {json.data.map((chair) => <Picker.Item key={chair.id} label={chair.chair}
-                                                          value={chair.id}/>)}
+                                                               value={chair.id}/>)}
                     </Picker>);
 
                     this.setState({chairItems: chairItems});
@@ -262,7 +266,7 @@ export default class Orders extends Component {
 
                     {
                         this.state.fontLoaded ? (
-                            <Header>
+                            <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
                                     <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
@@ -286,7 +290,7 @@ export default class Orders extends Component {
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#5067FF'}}
+                            style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
                             <Icon name="add"/>
@@ -311,12 +315,34 @@ export default class Orders extends Component {
 
                                     <Item floatingLabel>
                                         <Label>Amount</Label>
-                                        <Input onChangeText={(value) => this.setState({amount: value})}/>
+                                        <Input onChangeText={(value) => this.setState({amount: value.replace(/[^0-9]/g, '')})} keyboardType="numeric"/>
                                     </Item>
 
-                                    <Item floatingLabel>
+                                    <Item fixedLabel>
                                         <Label>Due Date</Label>
-                                        <Input onChangeText={(value) => this.setState({dueDate: value})}/>
+                                        <DatePicker
+                                            style={{width: 200}}
+                                            date={this.state.dueDate}
+                                            mode="date"
+                                            placeholder="select date"
+                                            format="DD-MM-YYYY"
+                                            minDate={new Date('DD-MM-YYY')}
+                                            confirmBtnText="Confirm"
+                                            cancelBtnText="Cancel"
+                                            customStyles={{
+                                                dateIcon: {
+                                                    position: 'absolute',
+                                                    left: 0,
+                                                    top: 4,
+                                                    marginLeft: 0
+                                                },
+                                                dateInput: {
+                                                    marginLeft: 36
+                                                }
+
+                                            }}
+                                            onDateChange={(date) => {this.setState({dueDate: date})}}
+                                        />
                                     </Item>
 
                                 </Form>

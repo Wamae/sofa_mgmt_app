@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {
-    Button, FlatList, Image, StyleSheet, Text, View
+    Button, FlatList, Image, StyleSheet, Text, TouchableOpacity, View,NativeModules
 } from "react-native";
 import Modal from 'react-native-modal';
 import ChairItem from "./ChairItem";
@@ -11,10 +11,11 @@ import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
+import {ImagePicker} from 'react-native-image-picker';
 
 export default class Chairs extends Component {
 
-    //ImagePicker = require('react-native-image-picker');
+
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
@@ -23,9 +24,11 @@ export default class Chairs extends Component {
 
     }
 
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
         this.state = {
+            ACCOUNT_ID: this.props.navigation.state.params.account_id,
+            USER_ID: this.props.navigation.state.params.user_id,
             chairs: [],
             chairTypes: [],
             chairTypeItems: null,
@@ -56,7 +59,7 @@ export default class Chairs extends Component {
             }
         };
 
-        this.ImagePicker.showImagePicker(options, (response) => {
+        ImagePicker.showImagePicker(options, (response) => {
             console.log('Response = ', response);
 
             if (response.didCancel) {
@@ -69,13 +72,13 @@ export default class Chairs extends Component {
                 console.log('User tapped custom button: ', response.customButton);
             }
             else {
-                let source = { uri: response.uri };
+                //let source = { uri: response.uri };
 
                 // You can also display the image using data:
-                // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+                let source = { uri: 'data:image/jpeg;base64,' + response.data };
 
                 this.setState({
-                    avatarSource: source
+                    chairImage: source
                 });
             }
         });*/
@@ -89,25 +92,29 @@ export default class Chairs extends Component {
             return false;
         }
 
+        let formData = new FormData();
+
+        formData.append("chair", chair);
+        formData.append("chair_type_id", this.state.chairTypeId);
+        formData.append("created_by", this.state.USER_ID);
+        formData.append("account_id", this.state.ACCOUNT_ID);
+        formData.append("image_url", {uri: this.state.chairImage, name: 'chair_image',type: 'image/jpeg'});
+
         fetch(BASE_URL + '/chairs', {
             method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                chair: chair,
-                chair_type_id: this.state.chairTypeId,
-                created_by: USER_ID,
-                account_id: ACCOUNT_ID,
-            }),
+            body: formData,
         }).then((response) => response.json())
-            .then((responseJson) => {
+            .then((json) => {
+                if (json.status == 1) {
+                    this.setState({refresh: !this.state.refresh});
+                    this._getAllChairs();
+                    this.setState({visibleModal: false, orderStatus: ""});
 
-                this.setState({refresh: !this.state.refresh});
-                this._getAllChairs();
-                alert(responseJson.message);
-                this.setState({visibleModal: false, orderStatus: ""});
+                    alert(json.message);
+
+                } else {
+                    alert(json.message);
+                }
 
             })
             .catch((error) => {
@@ -126,10 +133,14 @@ export default class Chairs extends Component {
     }
 
     _getAllChairs() {
-        return fetch(BASE_URL + '/get_all_chairs?account_id=' + ACCOUNT_ID)
+        return fetch(BASE_URL + '/get_all_chairs?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
-                this.setState({chairs: {"rows": json}});
+                if (json.data.length > 0) {
+                    this.setState({chairs: {"rows": json.data}});
+                } else {
+                    alert(json.message);
+                }
             }).catch((error) => {
                 console.error(error);
                 alert("Could not connect to the server!");
@@ -143,21 +154,25 @@ export default class Chairs extends Component {
     }
 
     _getAllChairTypes() {
-        return fetch(BASE_URL + '/get_all_chair_types?account_id=' + ACCOUNT_ID)
+        return fetch(BASE_URL + '/get_all_chair_types?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
+                console.log(">>> Chairs->_getAllChairTypes",json);
+                if (json.data.length > 0) {
+                    this.setState({chairTypes: {"rows": json.data}});
 
-                this.setState({chairTypes: {"rows": json}});
+                    let chairTypeItems = (<Picker
+                        selectedValue={this.state.chairTypeId}
+                        onValueChange={this.onValueChange.bind(this)}
+                    >
+                        {json.data.map((chairType) => <Picker.Item key={chairType.id} label={chairType.chair_type}
+                                                              value={chairType.id}/>)}
+                    </Picker>);
 
-                let chairTypeItems = (<Picker
-                    selectedValue={this.state.chairTypeId}
-                    onValueChange={this.onValueChange.bind(this)}
-                >
-                    {json.map((chairType) => <Picker.Item key={chairType.id} label={chairType.chair_type}
-                                                                value={chairType.id}/>)}
-                </Picker>);
-
-                this.setState({chairTypeItems:chairTypeItems});
+                    this.setState({chairTypeItems: chairTypeItems});
+                } else {
+                    alert(json.message);
+                }
 
             }).catch((error) => {
                 console.error(error);
@@ -208,21 +223,18 @@ export default class Chairs extends Component {
         this.drawer._root.open()
     };
 
-    getChairTypes = () => {
-        let chairTypes = this.state.chairTypes.rows;
-        console.log(">>> getChairTypes: ", chairTypes);
-        if (chairTypes.length > 0) {
-            return (
-                <Picker
-                    selectedValue={this.state.chairTypeId}
-                >
-                    <Picker.Item key={0} label={'Tipo de evento'} value={''}/>
-                    {chairTypes.map((chairType) => <Picker.Item key={chairType.id} label={chairType.chair_type}
-                                                                value={chairType.id}/>)}
-                </Picker>
-            );
+    // When "Choose" is pressed, we show the user's image library
+    // so they may show a photo from disk inside the image view.
+    _onChoosePic = async () => {
+        const {
+            cancelled,
+            uri,
+        } = await Expo.ImagePicker.launchImageLibraryAsync();
+        if (!cancelled) {
+
+            this.setState({chairImage: uri});
+
         }
-        return null;
     }
 
     render() {
@@ -249,7 +261,7 @@ export default class Chairs extends Component {
 
                     {
                         this.state.fontLoaded ? (
-                            <Header>
+                            <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
                                     <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
                                 </Left>
@@ -273,7 +285,7 @@ export default class Chairs extends Component {
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#5067FF'}}
+                            style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
                             <Icon name="add"/>
@@ -296,7 +308,14 @@ export default class Chairs extends Component {
                                         {this.state.chairTypeItems}
                                     </Item>
 
-                                    <Image source={this.state.chairImage} />
+                                   <Item stackedLabel>
+
+                                       <TouchableOpacity
+                                           onPress={this._onChoosePic}>
+                                           <Text>Choose</Text>
+                                       </TouchableOpacity>
+
+                                   </Item>
 
                                 </Form>
 
