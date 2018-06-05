@@ -14,11 +14,11 @@ class ChairItem extends Component {
         const textColor = this.props.selected ? "red" : "black";
         return (
             <ListItem icon
-                divider
-                onPress={() => {
-                }}>
+                      divider
+                      onPress={this._showGallery.bind(this, this.props.chair, this.props.chairType, this.props.imageUrl)}
+            >
                 <Left>
-                    <Thumbnail small source={{uri: this.props.imageUrl}} />
+                    <Thumbnail small source={{uri: this.props.imageUrl}}/>
                 </Left>
                 <Body>
                 <Text>{this.props.chair}</Text>
@@ -26,6 +26,11 @@ class ChairItem extends Component {
                 </Body>
             </ListItem>
         );
+
+    }
+
+    _showGallery(chair, chairType, chairImage) {
+        this.props.onShowGallery(chair, chairType, chairImage)
     }
 
 }

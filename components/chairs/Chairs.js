@@ -12,10 +12,9 @@ import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 import {ImagePicker} from 'react-native-image-picker';
+import call from "react-native-phone-call";
 
 export default class Chairs extends Component {
-
-
 
     onActionSelected(position) {
         if (position === 0) { // index of 'Settings'
@@ -203,13 +202,23 @@ export default class Chairs extends Component {
     _renderItem = ({item}) => (
         <ChairItem
             id={item.id.toString()}
-            onPressItem={this._onPressItem}
+            //onPressItem={this._onPressItem}
+            onShowGallery={this._onShowGallery.bind(this)}
             //selected={!!this.state.selected.get(item.id)}
             chair={item.chair}
             chairType={item.chair_type}
             imageUrl={item.image_url}
         />
     );
+
+    _onShowGallery(chair,chairType,chairImage) {
+        //alert();
+        this.props.navigation.navigate('ChairGallery', {
+            chair:chair,
+            chairType:chairType,
+            chairImage:chairImage
+        })
+    }
 
     _onPressItem = () => {
         alert("_onPressItem");

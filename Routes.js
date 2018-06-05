@@ -3,6 +3,7 @@ import OrderStatuses from "./components/order_statuses/OrderStatuses";
 import Customers from "./components/customers/Customers";
 import ChairTypes from "./components/chair_types/ChairTypes";
 import Chairs from "./components/chairs/Chairs";
+import ChairGallery from "./components/chair_gallery/ChairGallery";
 import Orders from "./components/orders/Orders";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
@@ -36,6 +37,9 @@ export const AdNav = createStackNavigator({
 
         Chairs: {
             screen: Chairs
+        },
+        ChairGallery: {
+            screen: ChairGallery
         }
     },
     {
