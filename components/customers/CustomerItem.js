@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
-import {Body, Button, ListItem, Right, Text} from "native-base";
-import { Ionicons } from '@expo/vector-icons';
+import {Body, Button, Left, ListItem, Right, Text, View} from "native-base";
+import {Ionicons} from '@expo/vector-icons';
+import {StyleSheet} from "react-native";
 
 class CustomerItem extends Component {
 
@@ -12,24 +13,19 @@ class CustomerItem extends Component {
 
         console.log(">>> Customer: ", this.props);
 
-        const textColor = this.props.selected ? "red" : "black";
         return (
-            <ListItem
-                divider
-
-            >
-                <Body>
-                <Text>{this.props.firstName+" "+this.props.lastName}</Text>
-                <Text note>{this.props.phone}</Text>
-                </Body>
-                <Right>
-                    <Button iconLeft transparent onPress={this._makeCall.bind(this,this.props.phone)}>
+            <View style={styles.rowContainer}>
+                <View style={styles.leftView}>
+                    <Text>{this.props.firstName + " " + this.props.lastName}</Text>
+                    <Text note>{this.props.phone}</Text>
+                </View>
+                <View style={styles.rightView}>
+                    <Button iconLeft transparent onPress={this._makeCall.bind(this, this.props.phone)}>
                         <Ionicons name="md-call" style={{color: 'green'}} size={24}/>
                         <Text></Text>
                     </Button>
-
-                </Right>
-            </ListItem>
+                </View>
+            </View>
 
         );
     }
@@ -38,6 +34,26 @@ class CustomerItem extends Component {
         this.props.onMakeCall(phone)
     }
 }
+
+const styles = StyleSheet.create({
+    rowContainer: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+
+    leftView: {
+        padding: 4,
+        alignItems: 'flex-start'
+    },
+    rightView: {
+        padding: 4,
+        //marginLeft: 210,
+        position: "absolute", bottom: 0, right: 0,
+        alignItems: 'flex-end'
+    },
+
+});
+
 
 
 export default CustomerItem;

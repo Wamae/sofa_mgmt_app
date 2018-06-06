@@ -1,18 +1,16 @@
 import React, {Component} from 'react';
-import {
-    Button, FlatList, StyleSheet, Text, View
-} from "react-native";
+import {FlatList, StyleSheet, Text, View} from "react-native";
 import Modal from 'react-native-modal';
 import CustomerItem from "./CustomerItem";
 import {
-    Body, Drawer, Fab, Form, Header, Input, Item, Label, Left, Right, Title
+    Body, Button, Drawer, Fab, Form, Header, Input, Item, Label, Left, Right, SwipeRow, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 import call from "react-native-phone-call";
-import { Ionicons } from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import MyLoader from "../MyLoader";
 
 export default class Customers extends Component {
@@ -96,6 +94,34 @@ export default class Customers extends Component {
 
     }
 
+    _deleteCustomer(id) {
+        return fetch(BASE_URL + '/customers/' + id, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            },
+            body: JSON.stringify({
+                _method: "DELETE"
+            }),
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                console.log(">> deleteCustomer: ", json);
+                if (json.status == 1) {
+                    this._getAllCustomers();
+                    alert(json.message);
+                } else {
+                    alert(json.message);
+                }
+
+            }).catch((error) => {
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
+    }
+
     _closeDialog = () => {
         this.setState({visibleModal: false});
     }
@@ -112,6 +138,7 @@ export default class Customers extends Component {
                 if (json.data.length > 0) {
                     this.setState({customers: {"rows": json.data}});
                 } else {
+                    this.setState({customers: ""});
                     alert(json.message);
                 }
             }).catch((error) => {
@@ -137,15 +164,32 @@ export default class Customers extends Component {
     _keyExtractor = (item, index) => item.id.toString();
 
     _renderItem = ({item}) => (
-        <CustomerItem
-            id={item.id.toString()}
-            //onPressItem={this._onPressItem}
-            onMakeCall={this._makeCall.bind(this)}
-            //selected={!!this.state.selected.get(item.id)}
-            firstName={item.first_name}
-            lastName={item.last_name}
-            phone={item.phone}
-            address={item.address}
+
+        <SwipeRow
+            leftOpenValue={75}
+            rightOpenValue={-75}
+            left={
+                <Button full success onPress={this._showDialog}>
+                    <Ionicons active name="md-add" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
+            body={
+                <CustomerItem
+                    id={item.id.toString()}
+                    //onPressItem={this._onPressItem}
+                    onMakeCall={this._makeCall.bind(this)}
+                    //selected={!!this.state.selected.get(item.id)}
+                    firstName={item.first_name}
+                    lastName={item.last_name}
+                    phone={item.phone}
+                    address={item.address}
+                />
+            }
+            right={
+                <Button full danger onPress={() => this._deleteCustomer(item.id)}>
+                    <Ionicons active name="md-trash" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
         />
     );
 
@@ -227,7 +271,7 @@ export default class Customers extends Component {
                         <Modal isVisible={this.state.visibleModal}>
                             <View style={styles.modalContent}>
                                 <View style={styles.modalTitle}>
-                                    <Text>Add First Name</Text>
+                                    <Text>Add Customer Details</Text>
                                 </View>
 
                                 <Form>
@@ -259,12 +303,14 @@ export default class Customers extends Component {
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._addCustomer} title="Add"
-                                        />
+                                        <Button block primary onPress={this._addCustomer}>
+                                            <Text style={{color: 'white'}}>Add</Text>
+                                        </Button>
                                     </View>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._closeDialog} title="Close"
-                                        />
+                                        <Button block primary onPress={this._closeDialog}>
+                                            <Text style={{color: 'white'}}>Close</Text>
+                                        </Button>
                                     </View>
                                 </View>
                             </View>
