@@ -1,17 +1,17 @@
 import React, {Component} from 'react';
 import {
-    Button, FlatList, StyleSheet, Text, View
+    FlatList, StyleSheet, Text, View
 } from "react-native";
 import Modal from 'react-native-modal';
 import OrderStatusItem from "./OrderStatusItem";
 import {
-    Body, Drawer, Form, Header, Input, Item, Label, Left, Right, Title
+    Body, Button, Drawer, Form, Header, Input, Item, Label, Left, Right, SwipeRow, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
-import { Ionicons } from '@expo/vector-icons';
+import {Ionicons} from '@expo/vector-icons';
 import MyLoader from "../MyLoader";
 
 export default class OrderStatuses extends Component {
@@ -115,13 +115,57 @@ export default class OrderStatuses extends Component {
     _keyExtractor = (item, index) => item.id.toString();
 
     _renderItem = ({item}) => (
-        <OrderStatusItem
-            id={item.id.toString()}
-            onPressItem={this._onPressItem}
-            //selected={!!this.state.selected.get(item.id)}
-            orderStatus={item.order_status}
+        <SwipeRow
+            leftOpenValue={75}
+            rightOpenValue={-75}
+            left={
+                <Button full success onPress={this._showDialog}>
+                    <Ionicons active name="md-add" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
+            body={
+                <OrderStatusItem
+                    id={item.id.toString()}
+                    onPressItem={this._onPressItem}
+                    //selected={!!this.state.selected.get(item.id)}
+                    orderStatus={item.order_status}
+                />
+            }
+            right={
+                <Button full danger onPress={() => this._deleteOrderStatus(item.id)}>
+                    <Ionicons active name="md-trash" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
         />
     );
+
+    _deleteOrderStatus(id) {
+        return fetch(BASE_URL + '/orders_statuses/' + id, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            },
+            body: JSON.stringify({
+                _method: "DELETE"
+            }),
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                console.log(">> deleteOrderStatus: ", json);
+                if (json.status == 1) {
+                    this._getAllOrders();
+                    alert(json.message);
+                } else {
+                    alert(json.message);
+                }
+
+            }).catch((error) => {
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
+    }
 
     _onPressItem = () => {
         alert("_onPressItem");
@@ -204,12 +248,14 @@ export default class OrderStatuses extends Component {
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._addOrderStatus} title="Add"
-                                        />
+                                        <Button block primary onPress={this._addOrderStatus}>
+                                            <Text style={{color: 'white'}}>Add</Text>
+                                        </Button>
                                     </View>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._closeDialog} title="Close"
-                                        />
+                                        <Button block primary onPress={this._closeDialog}>
+                                            <Text style={{color: 'white'}}>Close</Text>
+                                        </Button>
                                     </View>
                                 </View>
                             </View>
