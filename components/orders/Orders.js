@@ -194,6 +194,7 @@ export default class Orders extends Component {
                 if (json.data.length > 0) {
                     this.setState({orders: {"rows": json.data}});
                 } else {
+                    this.setState({orders: ""});
                     alert(json.message);
                 }
 
@@ -239,6 +240,7 @@ export default class Orders extends Component {
                 console.log(">> deleteOrder: ", json);
                 if (json.status == 1) {
                     this._getAllOrders();
+                    alert(json.message);
                 } else {
                     alert(json.message);
                 }
@@ -272,7 +274,7 @@ export default class Orders extends Component {
                 />
             }
             right={
-                <Button full danger onPress={() => this._deleteOrder(item.key)}>
+                <Button full danger onPress={() => this._deleteOrder(item.id)}>
                     <Ionicons active name="md-trash" style={{color: 'white'}} size={24}/>
                 </Button>
             }
