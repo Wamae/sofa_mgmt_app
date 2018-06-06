@@ -5,12 +5,14 @@ import {
 import Modal from 'react-native-modal';
 import ChairTypeItem from "./ChairTypeItem";
 import {
-    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Title
+    Body, Drawer, Fab, Form, Header, Input, Item, Label, Left, Right, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
+import { Ionicons } from '@expo/vector-icons';
+import MyLoader from "../MyLoader";
 
 export default class ChairTypes extends Component {
 
@@ -87,9 +89,11 @@ export default class ChairTypes extends Component {
             .then((response) => response.json())
             .then((json) => {
                 if (json.data.length > 0) {
+                    this.setState({loading: false});
                     this.setState({chairTypes: {"rows": json.data}});
 
                 } else {
+                    this.setState({loading: false});
                     alert(json.message);
                 }
             }).catch((error) => {
@@ -108,7 +112,7 @@ export default class ChairTypes extends Component {
         this._getAllChairTypes();
 
         this.setState({fontLoaded: true});
-        this.setState({loading: false});
+
     }
 
     _keyExtractor = (item, index) => item.id.toString();
@@ -138,7 +142,7 @@ export default class ChairTypes extends Component {
 
         if (this.state.loading) {
             return (
-                <LoadingSpinner/>
+                <MyLoader/>
             );
         } else {
 
@@ -159,7 +163,8 @@ export default class ChairTypes extends Component {
                         this.state.fontLoaded ? (
                             <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
-                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
+                                    <Ionicons onPress={() => this.openDrawer()} name="md-menu" size={24}
+                                              style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
                                 <Title>Chair Types</Title>
@@ -184,7 +189,7 @@ export default class ChairTypes extends Component {
                             style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
-                            <Icon name="add"/>
+                            <Ionicons name="md-add"/>
                         </Fab>
 
                         <Modal isVisible={this.state.visibleModal}>

@@ -5,13 +5,15 @@ import {
 import Modal from 'react-native-modal';
 import CustomerItem from "./CustomerItem";
 import {
-    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Right, Title
+    Body, Drawer, Fab, Form, Header, Input, Item, Label, Left, Right, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 import call from "react-native-phone-call";
+import { Ionicons } from '@expo/vector-icons';
+import MyLoader from "../MyLoader";
 
 export default class Customers extends Component {
 
@@ -106,12 +108,14 @@ export default class Customers extends Component {
         return fetch(BASE_URL + '/get_all_customers?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
+                this.setState({loading: false});
                 if (json.data.length > 0) {
                     this.setState({customers: {"rows": json.data}});
                 } else {
                     alert(json.message);
                 }
             }).catch((error) => {
+                this.setState({loading: false});
                 console.error(error);
                 alert("Could not connect to the server!");
             });
@@ -127,7 +131,7 @@ export default class Customers extends Component {
         this._getAllCustomers();
 
         this.setState({fontLoaded: true});
-        this.setState({loading: false});
+
     }
 
     _keyExtractor = (item, index) => item.id.toString();
@@ -170,7 +174,7 @@ export default class Customers extends Component {
 
         if (this.state.loading) {
             return (
-                <LoadingSpinner/>
+                <MyLoader/>
             );
         } else {
 
@@ -191,7 +195,8 @@ export default class Customers extends Component {
                         this.state.fontLoaded ? (
                             <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
-                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
+                                    <Ionicons onPress={() => this.openDrawer()} name="md-menu" size={24}
+                                              style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
                                 <Title>Customers</Title>
@@ -216,7 +221,7 @@ export default class Customers extends Component {
                             style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
-                            <Icon name="add"/>
+                            <Ionicons name="md-add"/>
                         </Fab>
 
                         <Modal isVisible={this.state.visibleModal}>

@@ -1,7 +1,16 @@
 {
-  "name": "esms_app",
-  "displayName": "esms_app",
   "expo": {
-    "sdkVersion": "27.0.0"
+    "name": "ESMS",
+    //"displayName": "esms_app",
+    //"icon": "./path/to/your/app-icon.png",
+    "version": "1.0.0",
+    //"slug": "your-app-slug",
+    "sdkVersion": "27.0.0",
+    "ios": {
+      "bundleIdentifier": "com.mw.esms"
+    },
+    "android": {
+      "package": "com.ms.esms"
+    }
   }
 }

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Body, Container, Content, Header, Icon, List, ListItem, Right, Text, Thumbnail} from "native-base";
+import {Body, ListItem, Text} from "native-base";
 
 class ChairTypeItem extends Component {
 

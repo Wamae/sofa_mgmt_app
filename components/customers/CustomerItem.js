@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {Body, Button, Icon, ListItem, Right, Text} from "native-base";
+import {Body, Button, ListItem, Right, Text} from "native-base";
+import { Ionicons } from '@expo/vector-icons';
 
 class CustomerItem extends Component {
 
@@ -23,7 +24,7 @@ class CustomerItem extends Component {
                 </Body>
                 <Right>
                     <Button iconLeft transparent onPress={this._makeCall.bind(this,this.props.phone)}>
-                        <Icon name="call" style={{color: 'green'}}/>
+                        <Ionicons name="md-call" style={{color: 'green'}} size={24}/>
                         <Text></Text>
                     </Button>
 

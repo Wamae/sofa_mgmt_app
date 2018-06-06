@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Col, Container, Content, Form, Grid, Header, Input, Item, Label, Text, View} from "native-base";
-import {Button, AsyncStorage} from "react-native";
+import {Button} from "react-native";
 
 export default class Login extends Component {
 

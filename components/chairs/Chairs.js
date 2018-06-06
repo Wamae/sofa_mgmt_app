@@ -5,14 +5,15 @@ import {
 import Modal from 'react-native-modal';
 import ChairItem from "./ChairItem";
 import {
-    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Picker, Right, Title
+    Body, Drawer, Fab, Form, Header, Input, Item, Label, Left, Picker, Right, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 import {ImagePicker} from 'react-native-image-picker';
-import call from "react-native-phone-call";
+import { Ionicons } from '@expo/vector-icons';
+import MyLoader from "../MyLoader";
 
 export default class Chairs extends Component {
 
@@ -135,12 +136,14 @@ export default class Chairs extends Component {
         return fetch(BASE_URL + '/get_all_chairs?account_id=' + this.state.ACCOUNT_ID)
             .then((response) => response.json())
             .then((json) => {
+                this.setState({loading: false});
                 if (json.data.length > 0) {
                     this.setState({chairs: {"rows": json.data}});
                 } else {
                     alert(json.message);
                 }
             }).catch((error) => {
+                this.setState({loading: false});
                 console.error(error);
                 alert("Could not connect to the server!");
             });
@@ -184,7 +187,7 @@ export default class Chairs extends Component {
         this._getAllChairTypes();
 
         this._getAllChairs();
-        this.setState({loading: false});
+
     }
 
     async componentWillMount() {
@@ -250,11 +253,11 @@ export default class Chairs extends Component {
 
         if (this.state.loading) {
             return (
-                <LoadingSpinner/>
+                <MyLoader/>
             );
         } else {
 
-            console.log(">>> Chairs.js: ", this.state.chairs);
+            //console.log(">>> Chairs.js: ", this.state.chairs);
             console.log(">>> ChairTypes.js: ", this.state.chairTypes);
 
             return (
@@ -272,7 +275,8 @@ export default class Chairs extends Component {
                         this.state.fontLoaded ? (
                             <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
-                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
+                                    <Ionicons onPress={() => this.openDrawer()} name="md-menu" size={24}
+                                              style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
                                 <Title>Chairs</Title>
@@ -297,7 +301,7 @@ export default class Chairs extends Component {
                             style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
-                            <Icon name="add"/>
+                            <Ionicons name="md-add"/>
                         </Fab>
 
                         <Modal isVisible={this.state.visibleModal}>

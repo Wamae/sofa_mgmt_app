@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {Image} from 'react-native';
-import {Container, Header, View, DeckSwiper, Card, CardItem, Thumbnail, Text, Left, Body, Icon} from 'native-base';
+import {Container, Header, View, DeckSwiper, Card, CardItem, Thumbnail, Text, Left, Body} from 'native-base';
+import { Ionicons } from '@expo/vector-icons';
 
 
 export default class ChairGallery extends Component {
@@ -47,7 +48,7 @@ render(){
                                     <Image style={{ height: 300, flex: 1 }} source={{uri: item.image}} />
                                 </CardItem>
                                 <CardItem>
-                                    <Icon name="heart" style={{ color: '#ED4A6A' }} />
+                                    <Ionicons name="heart" style={{ color: '#ED4A6A' }} />
                                     <Text>{item.name}</Text>
                                 </CardItem>
                             </Card>

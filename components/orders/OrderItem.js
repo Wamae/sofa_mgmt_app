@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
-import {Body, Button, Icon, Left, ListItem, Right, Text} from "native-base";
+import {Body, ListItem, Text, View} from "native-base";
+import {StyleSheet} from "react-native";
 
 class OrderItem extends Component {
 
@@ -11,24 +12,34 @@ class OrderItem extends Component {
 
         console.log(">>> Customer: ", this.props);
 
-        const textColor = this.props.selected ? "red" : "black";
         return (
-            <ListItem
-                divider
-            >
-                <Body>
+            <View style={styles.rowContainer}>
+                <View style={styles.itemContainer}>
                     <Text>Customer: {this.props.customerName}</Text>
                     <Text note>Chair: {this.props.chair}</Text>
                     <Text note>Chair Type: {this.props.chairType}</Text>
+                </View>
+                <View style={styles.itemContainer}>
                     <Text>Amount: {this.props.amount}</Text>
-                    <Text>Due Date: {this.props.dueDate}</Text>
+                    <Text>Due: {this.props.dueDate}</Text>
                     <Text note>Order Status: {this.props.orderStatus}</Text>
-                </Body>
-            </ListItem>
+                </View>
+            </View>
 
         );
     }
 }
+
+const styles = StyleSheet.create({
+    rowContainer: {
+        flexDirection: 'row',
+    },
+
+    itemContainer: {
+        flex: 1,
+        padding: 4
+    },
+});
 
 
 export default OrderItem;

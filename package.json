@@ -32,7 +32,6 @@
     "react-native-dialog": "^3.3.0",
     "react-native-fs": "^2.9.12",
     "react-native-image-picker": "^0.26.10",
-    "react-native-image-to-base64": "^0.1.0",
     "react-native-material-ui": "^1.22.3",
     "react-native-phone-call": "^1.0.6",
     "react-native-popup-dialog": "^0.11.46",

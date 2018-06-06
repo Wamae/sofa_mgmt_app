@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {View, Text} from 'react-native';
-import {Col, Content, Grid, H1, Icon} from 'native-base';
+import {Col, Content, Grid, H1} from 'native-base';
+import { Ionicons } from '@expo/vector-icons';
 
 export default class SideBar extends Component {
 
@@ -20,39 +21,39 @@ export default class SideBar extends Component {
             <Content style={{backgroundColor: '#FFFFFF'}}>
                 <View style={{flex: 1}}>
                     <Grid>
-                        <Col style={{backgroundColor: '#FFC107', height: 150, alignItems:'center',justifyContent:'center'}}>
-                            <H1 style={{color: '#303F9F'}}>ESMS</H1>
+                        <Col style={{backgroundColor: '#5067FF', height: 150, alignItems:'center',justifyContent:'center'}}>
+                            <H1 style={{color: 'white'}}>ESMS</H1>
                         </Col>
                     </Grid>
                     <Text onPress={() => this.props.navigation.navigate('Orders', {
                         account_id: this.state.accountId,
                         user_id: this.props.userId
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
-                        <Icon name="md-cash"/> Orders
+                        <Ionicons name="md-cash" size={24}/> Orders
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('Customers', {
                         account_id: this.props.accountId,
                         user_id: this.props.userId
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
-                        <Icon name="md-contacts"/> Customers
+                        <Ionicons name="md-contacts" size={24}/> Customers
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('Chairs', {
                         account_id: this.props.accountId,
                         user_id: this.props.userId
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
-                        <Icon name="md-cube"/> Chairs
+                        <Ionicons name="md-cube" size={24}/> Chairs
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('ChairTypes', {
                         account_id: this.props.accountId,
                         user_id: this.props.userId
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
-                        <Icon name="md-contract"/> Chair Types
+                        <Ionicons name="md-contract" size={24}/> Chair Types
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('OrderStatuses', {
                         account_id: this.props.accountId,
                         user_id: this.props.userId
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
-                        <Icon name="md-clipboard"/> Order Statuses
+                        <Ionicons name="md-clipboard" size={24}/> Order Statuses
                     </Text>
                 </View>
             </Content>

@@ -1,17 +1,20 @@
 import React, {Component} from 'react';
 import {
-    Button, FlatList, StyleSheet, Text, View, AsyncStorage
+    FlatList, StyleSheet, Text, View, AsyncStorage
 } from "react-native";
 import Modal from 'react-native-modal';
 import OrderItem from "./OrderItem";
 import {
-    Body, Drawer, Fab, Form, Header, Icon, Input, Item, Label, Left, Picker, Right, Title
+    Body, Button, Content, Drawer, Fab, Form, Header, Input, Item, Label, Left, Picker, Right, Spinner, SwipeRow, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
 import LoadingSpinner from "../LoadingSpinner";
 import DatePicker from "react-native-datepicker";
+import {Ionicons} from '@expo/vector-icons';
+import Container from "../Container";
+import MyLoader from "../MyLoader";
 
 export default class Orders extends Component {
 
@@ -187,13 +190,16 @@ export default class Orders extends Component {
         })
             .then((response) => response.json())
             .then((json) => {
+                this.setState({loading: false});
                 if (json.data.length > 0) {
                     this.setState({orders: {"rows": json.data}});
                 } else {
                     alert(json.message);
                 }
 
+
             }).catch((error) => {
+                this.setState({loading: false});
                 console.error(error);
                 alert("Could not connect to the server!");
             });
@@ -211,22 +217,65 @@ export default class Orders extends Component {
         this._getAllChairs();
 
         this.setState({fontLoaded: true});
-        this.setState({loading: false});
+
     }
 
     _keyExtractor = (item, index) => item.id.toString();
 
+    _deleteOrder(id) {
+        return fetch(BASE_URL + '/orders/' + id, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + TOKEN,
+            },
+            body: JSON.stringify({
+                _method: "DELETE"
+            }),
+        })
+            .then((response) => response.json())
+            .then((json) => {
+                console.log(">> deleteOrder: ", json);
+                if (json.status == 1) {
+                    this._getAllOrders();
+                } else {
+                    alert(json.message);
+                }
+
+            }).catch((error) => {
+                console.error(error);
+                alert("Could not connect to the server!");
+            });
+    }
+
     _renderItem = ({item}) => (
-        <OrderItem
-            id={item.id.toString()}
-            //onPressItem={this._onPressItem}
-            //selected={!!this.state.selected.get(item.id)}
-            customerName={item.customer_name}
-            chair={item.chair}
-            chairType={item.chair_type}
-            amount={item.amount}
-            dueDate={item.due_date}
-            orderStatus={item.order_status}
+        <SwipeRow
+            leftOpenValue={75}
+            rightOpenValue={-75}
+            left={
+                <Button full success onPress={this._showDialog}>
+                    <Ionicons active name="md-add" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
+            body={
+                <OrderItem
+                    id={item.id.toString()}
+                    //onPressItem={this._onPressItem}
+                    //selected={!!this.state.selected.get(item.id)}
+                    customerName={item.customer_name}
+                    chair={item.chair}
+                    chairType={item.chair_type}
+                    amount={item.amount}
+                    dueDate={item.due_date}
+                    orderStatus={item.order_status}
+                />
+            }
+            right={
+                <Button full danger onPress={() => this._deleteOrder(item.key)}>
+                    <Ionicons active name="md-trash" style={{color: 'white'}} size={24}/>
+                </Button>
+            }
         />
     );
 
@@ -242,11 +291,15 @@ export default class Orders extends Component {
         this.drawer._root.open()
     };
 
+    _deleteRow(data) {
+        console.log(">>> deleteRow: ", data);
+    }
+
     render() {
 
         if (this.state.loading) {
             return (
-                <LoadingSpinner/>
+                <MyLoader/>
             );
         } else {
 
@@ -268,7 +321,8 @@ export default class Orders extends Component {
                         this.state.fontLoaded ? (
                             <Header style={{backgroundColor: "#3F51B5"}}>
                                 <Left>
-                                    <Icon onPress={() => this.openDrawer()} name="menu" style={{color: 'white'}}/>
+                                    <Ionicons onPress={() => this.openDrawer()} name="md-menu" size={24}
+                                              style={{color: 'white'}}/>
                                 </Left>
                                 <Body>
                                 <Title>Orders</Title>
@@ -283,17 +337,18 @@ export default class Orders extends Component {
                             data={this.state.orders.rows}
                             extraData={this.state.refresh}
                             keyExtractor={this._keyExtractor}
-                            renderItem={this._renderItem}>
+                            renderItem={this._renderItem}
+                        >
                         </FlatList>
 
                         <Fab
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#FFC107'}}
+                            style={{backgroundColor: '#5067FF'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
-                            <Icon name="add"/>
+                            <Ionicons name="md-add"/>
                         </Fab>
 
                         <Modal isVisible={this.state.visibleModal}>
@@ -315,7 +370,9 @@ export default class Orders extends Component {
 
                                     <Item floatingLabel>
                                         <Label>Amount</Label>
-                                        <Input onChangeText={(value) => this.setState({amount: value.replace(/[^0-9]/g, '')})} keyboardType="numeric"/>
+                                        <Input
+                                            onChangeText={(value) => this.setState({amount: value.replace(/[^0-9]/g, '')})}
+                                            keyboardType="numeric"/>
                                     </Item>
 
                                     <Item fixedLabel>
@@ -341,7 +398,9 @@ export default class Orders extends Component {
                                                 }
 
                                             }}
-                                            onDateChange={(date) => {this.setState({dueDate: date})}}
+                                            onDateChange={(date) => {
+                                                this.setState({dueDate: date})
+                                            }}
                                         />
                                     </Item>
 
@@ -349,12 +408,14 @@ export default class Orders extends Component {
 
                                 <View style={styles.footerContainer}>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._addOrder} title="Add"
-                                        />
+                                        <Button block primary onPress={this._addOrder}>
+                                            <Text style={{color: 'white'}}>Add</Text>
+                                        </Button>
                                     </View>
                                     <View style={styles.buttonContainer}>
-                                        <Button onPress={this._closeDialog} title="Close"
-                                        />
+                                        <Button block primary onPress={this._closeDialog}>
+                                            <Text style={{color: 'white'}}>Close</Text>
+                                        </Button>
                                     </View>
                                 </View>
                             </View>
@@ -371,6 +432,10 @@ export default class Orders extends Component {
 
 
 const styles = StyleSheet.create({
+    center: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     footerContainer: {
         flexDirection: 'row',
     },
