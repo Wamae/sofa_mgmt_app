@@ -1,25 +1,22 @@
 import React, {Component} from 'react';
 import {
-    FlatList, StyleSheet, Text, View, AsyncStorage
-} from "react-native";
+    FlatList, StyleSheet, Text, View} from "react-native";
 import Modal from 'react-native-modal';
 import OrderItem from "./OrderItem";
 import {
-    Body, Button, Content, Drawer, Fab, Form, Header, Input, Item, Label, Left, Picker, Right, Spinner, SwipeRow, Title
+    Body, Button, Drawer, Fab, Form, Header, Input, Item, Label, Left, Picker, Right, Spinner, SwipeRow, Title
 } from "native-base";
 import SideBar from "../SideBar";
 import {Font} from "expo";
 import MyStatusBar from "../MyStatusBar";
-import LoadingSpinner from "../LoadingSpinner";
 import DatePicker from "react-native-datepicker";
 import {Ionicons} from '@expo/vector-icons';
-import Container from "../Container";
 import MyLoader from "../MyLoader";
 
 export default class Orders extends Component {
 
     onActionSelected(position) {
-        if (position === 0) { // index of 'Settings'
+        if (position === 0) {
             showSettings();
         }
     }
@@ -293,10 +290,6 @@ export default class Orders extends Component {
         this.drawer._root.open()
     };
 
-    _deleteRow(data) {
-        console.log(">>> deleteRow: ", data);
-    }
-
     render() {
 
         if (this.state.loading) {
@@ -347,7 +340,7 @@ export default class Orders extends Component {
                             active={this.state.active}
                             direction="up"
                             containerStyle={{}}
-                            style={{backgroundColor: '#5067FF'}}
+                            style={{backgroundColor: '#FFC107'}}
                             position="bottomRight"
                             onPress={this._showDialog}>
                             <Ionicons name="md-add"/>
