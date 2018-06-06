@@ -26,32 +26,32 @@ export default class SideBar extends Component {
                         </Col>
                     </Grid>
                     <Text onPress={() => this.props.navigation.navigate('Orders', {
-                        account_id: this.state.accountId,
-                        user_id: this.props.userId
+                        account_id: this.state.ACCOUNT_ID,
+                        user_id: this.state.USER_ID
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
                         <Ionicons name="md-cash" size={24}/> Orders
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('Customers', {
-                        account_id: this.props.accountId,
-                        user_id: this.props.userId
+                        account_id: this.state.ACCOUNT_ID,
+                        user_id: this.state.USER_ID
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
                         <Ionicons name="md-contacts" size={24}/> Customers
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('Chairs', {
-                        account_id: this.props.accountId,
-                        user_id: this.props.userId
+                        account_id: this.state.ACCOUNT_ID,
+                        user_id: this.state.USER_ID
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
                         <Ionicons name="md-cube" size={24}/> Chairs
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('ChairTypes', {
-                        account_id: this.props.accountId,
-                        user_id: this.props.userId
+                        account_id: this.state.ACCOUNT_ID,
+                        user_id: this.state.USER_ID
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
                         <Ionicons name="md-contract" size={24}/> Chair Types
                     </Text>
                     <Text onPress={() => this.props.navigation.navigate('OrderStatuses', {
-                        account_id: this.props.accountId,
-                        user_id: this.props.userId
+                        account_id: this.state.ACCOUNT_ID,
+                        user_id: this.state.USER_ID
                     })} style={{margin: 10, fontSize: 15, textAlign: 'left'}}>
                         <Ionicons name="md-clipboard" size={24}/> Order Statuses
                     </Text>
